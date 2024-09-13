@@ -1,0 +1,18 @@
+rules_version = '2';
+
+function signedIn() {
+  return request.auth.uid != null;
+}
+
+function signedInAs(userId) {
+  return signedIn() && request.auth.uid == userId;
+}
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/uploads/{file} {
+      allow read: if signedInAs(userId);
+      allow write: if signedInAs(userId) && request.resource.size < 5 * 1024 * 1024;
+    }
+  }
+}
